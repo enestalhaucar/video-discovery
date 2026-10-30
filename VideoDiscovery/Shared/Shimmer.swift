@@ -17,12 +17,16 @@ private struct Shimmer: ViewModifier {
                 if !reduceMotion {
                     GeometryReader { proxy in
                         LinearGradient(
-                            colors: [.clear, .white.opacity(0.35), .clear],
-                            startPoint: .leading,
-                            endPoint: .trailing
+                            stops: [
+                                .init(color: .clear, location: 0.3),
+                                .init(color: Theme.skeletonSheen, location: 0.5),
+                                .init(color: .clear, location: 0.7)
+                            ],
+                            startPoint: UnitPoint(x: 0, y: 0.4),
+                            endPoint: UnitPoint(x: 1, y: 0.6)
                         )
-                        .frame(width: proxy.size.width * 0.6)
-                        .offset(x: offset * proxy.size.width * 1.6)
+                        .frame(width: proxy.size.width)
+                        .offset(x: offset * proxy.size.width)
                     }
                     .mask(content)
                     .onAppear {

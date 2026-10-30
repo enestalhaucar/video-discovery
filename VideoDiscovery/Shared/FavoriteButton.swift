@@ -1,11 +1,11 @@
 import SwiftUI
 
-/// A heart that saves or removes a video, with a bounce, a small burst and a light haptic.
+/// The favourite toggle: pops with a burst when saved, dips when removed, with a light haptic.
 struct FavoriteButton: View {
     enum Style {
-        /// Floating over artwork, on a material circle.
-        case overlay
-        /// Inline in a row or a toolbar.
+        /// Floating over artwork, on a thin material disc.
+        case float
+        /// Inline in a row or the navigation bar.
         case plain
     }
 
@@ -14,49 +14,68 @@ struct FavoriteButton: View {
 
     @Environment(FavoritesStore.self) private var favoritesStore
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var burstCount = 0
+    @State private var popCount = 0
+    @State private var dipCount = 0
 
     var body: some View {
         let isFavorite = favoritesStore.isFavorite(video)
+        let animates = !reduceMotion
         Button {
-            withAnimation(isFavorite ? Motion.heartOff : Motion.heartOn) {
-                favoritesStore.toggle(video)
+            if isFavorite {
+                dipCount += 1
+            } else {
+                popCount += 1
             }
-            if !isFavorite {
-                burstCount += 1
+            withAnimation(Motion.listChange) {
+                favoritesStore.toggle(video)
             }
         } label: {
             Image(systemName: isFavorite ? "heart.fill" : "heart")
-                .font(style == .overlay ? .body.weight(.semibold) : .title3)
-                .foregroundStyle(isFavorite ? Color.pink : unselectedColor)
+                .font(style == .float ? .body.weight(.semibold) : .title3)
+                .foregroundStyle(isFavorite ? Theme.accent : Theme.label)
                 .contentTransition(.symbolEffect(.replace))
-                .symbolEffect(.bounce, value: reduceMotion ? false : isFavorite)
-                .frame(width: 36, height: 36)
+                .keyframeAnimator(initialValue: 1.0, trigger: popCount) { glyph, scale in
+                    glyph.scaleEffect(animates ? scale : 1)
+                } keyframes: { _ in
+                    SpringKeyframe(1.3, duration: 0.14, spring: .snappy)
+                    SpringKeyframe(1.0, spring: Spring(response: 0.35, dampingRatio: 0.5))
+                }
+                .keyframeAnimator(initialValue: 1.0, trigger: dipCount) { glyph, scale in
+                    glyph.scaleEffect(animates ? scale : 1)
+                } keyframes: { _ in
+                    SpringKeyframe(0.85, duration: 0.1, spring: .snappy)
+                    SpringKeyframe(1.0, spring: Spring(response: 0.3, dampingRatio: 0.7))
+                }
+                .frame(width: Theme.Size.heart, height: Theme.Size.heart)
                 .background {
-                    if style == .overlay {
-                        Circle().fill(.ultraThinMaterial)
+                    if style == .float {
+                        Circle().fill(.thinMaterial)
                     }
                 }
                 .overlay {
                     if !reduceMotion {
-                        HeartBurst(trigger: burstCount)
+                        HeartBurst(trigger: popCount)
                     }
                 }
-                .frame(width: 44, height: 44)
+                .frame(width: Theme.Size.hit, height: Theme.Size.hit)
                 .contentShape(Rectangle())
         }
-        .buttonStyle(.borderless)
+        .buttonStyle(PressedOpacityStyle())
         .sensoryFeedback(.impact(weight: .light), trigger: isFavorite)
-        .accessibilityLabel(isFavorite ? "Remove from Favourites" : "Add to Favourites")
-    }
-
-    // Concrete colours: inside a button, `.primary` resolves to the accent tint.
-    private var unselectedColor: Color {
-        style == .overlay ? .primary : .secondary
+        .accessibilityLabel(isFavorite ? "Remove from favourites" : "Save to favourites")
+        .accessibilityAddTraits(isFavorite ? .isSelected : [])
     }
 }
 
-/// Six dots that fly out of the heart and fade.
+/// Icon-only buttons dim while pressed.
+struct PressedOpacityStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .opacity(configuration.isPressed ? Theme.Opacity.pressed : 1)
+    }
+}
+
+/// Six accent dots that fly out of the heart and fade.
 private struct HeartBurst: View {
     let trigger: Int
 
@@ -64,7 +83,7 @@ private struct HeartBurst: View {
         ZStack {
             ForEach(0..<6, id: \.self) { index in
                 Circle()
-                    .fill(.pink)
+                    .fill(Theme.accent)
                     .frame(width: 4, height: 4)
                     .offset(y: -14)
                     .rotationEffect(.degrees(Double(index) * 60))
@@ -86,7 +105,7 @@ private struct HeartBurst: View {
 #Preview {
     HStack {
         FavoriteButton(video: Video.samples[1])
-        FavoriteButton(video: Video.samples[2], style: .overlay)
+        FavoriteButton(video: Video.samples[2], style: .float)
             .padding()
             .background(.teal)
     }
