@@ -5,8 +5,9 @@ import Testing
 @MainActor
 struct FavoritesStoreTests {
     @Test func favouritesSurviveARelaunch() {
-        // A folder that doesn't exist yet, like Application Support on a fresh install.
-        let folder = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        // A folder that doesn't exist yet and has a space in its name, like Application Support
+        // on a fresh install.
+        let folder = FileManager.default.temporaryDirectory.appending(path: "Fresh Install \(UUID().uuidString)")
         defer { try? FileManager.default.removeItem(at: folder) }
         let persistence = FileFavoritesPersistence(fileURL: folder.appending(path: "favorites.json"))
         let bunny = Video.samples[0]

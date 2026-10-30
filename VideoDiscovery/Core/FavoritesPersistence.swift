@@ -20,7 +20,8 @@ struct FileFavoritesPersistence: FavoritesPersisting {
     }
 
     func load() -> [Video] {
-        guard FileManager.default.fileExists(atPath: fileURL.path()) else { return [] }
+        // Not percent-encoded: "Application Support" contains a space.
+        guard FileManager.default.fileExists(atPath: fileURL.path(percentEncoded: false)) else { return [] }
         do {
             let data = try Data(contentsOf: fileURL)
             return try JSONDecoder().decode([Video].self, from: data)
