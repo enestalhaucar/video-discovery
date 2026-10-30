@@ -10,21 +10,10 @@ struct ThumbnailView: View {
             .aspectRatio(16 / 9, contentMode: .fit)
             .overlay {
                 if let url {
-                    AsyncImage(url: url, transaction: Transaction(animation: Motion.contentFade)) { phase in
-                        switch phase {
-                        case .success(let image):
-                            image
-                                .resizable()
-                                .scaledToFill()
-                                .transition(.opacity)
-                        case .failure:
-                            placeholder
-                        default:
-                            Color.clear
-                        }
-                    }
+                    CachedImage(url: url)
+                        .id(url)
                 } else {
-                    placeholder
+                    FilmPlaceholder()
                 }
             }
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
@@ -34,11 +23,55 @@ struct ThumbnailView: View {
             }
             .accessibilityHidden(true)
     }
+}
 
-    private var placeholder: some View {
+private struct FilmPlaceholder: View {
+    var body: some View {
         Image(systemName: "film")
             .font(.title)
             .foregroundStyle(Theme.labelSecondary)
+    }
+}
+
+/// Shows an image from the session cache at once, or loads it and fades it in.
+private struct CachedImage: View {
+    let url: URL
+    @State private var image: UIImage?
+    @State private var failed = false
+
+    init(url: URL) {
+        self.url = url
+        _image = State(initialValue: MediaCache.shared.cachedImage(for: url))
+    }
+
+    var body: some View {
+        Group {
+            if let image {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    .transition(.opacity)
+            } else if failed {
+                FilmPlaceholder()
+            } else {
+                Color.clear
+            }
+        }
+        .task { await load() }
+    }
+
+    private func load() async {
+        guard image == nil else { return }
+        do {
+            let loaded = try await MediaCache.shared.image(for: url)
+            withAnimation(Motion.contentFade) {
+                image = loaded
+            }
+        } catch {
+            // A cancelled load (the view went away) says nothing about this image.
+            guard !Task.isCancelled else { return }
+            failed = true
+        }
     }
 }
 
