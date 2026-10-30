@@ -21,18 +21,22 @@ struct RootView: View {
                             .zoomTransition(sourceID: video.id, in: zoomNamespace)
                     }
             }
+            // Accent as text (the back button) uses the deeper ink shade.
+            .tint(Theme.accentInk)
             .environment(\.isTabActive, selectedTab == .discover)
-            .tabItem { Label("Discover", systemImage: "play.rectangle") }
+            .tabItem { Label("Discover", systemImage: "play.rectangle.fill") }
             .tag(AppTab.discover)
 
             NavigationStack(path: $favoritesPath) {
                 FavoritesView { selectedTab = .discover }
                     .navigationDestination(for: Video.self) { VideoDetailView(video: $0) }
             }
+            .tint(Theme.accentInk)
             .environment(\.isTabActive, selectedTab == .favorites)
-            .tabItem { Label("Favourites", systemImage: "heart") }
+            .tabItem { Label("Favourites", systemImage: "heart.fill") }
             .tag(AppTab.favorites)
         }
+        .tint(Theme.accent)
         // Loaded here rather than in DiscoverView: the root never disappears, so switching tabs
         // during the first load can't cancel the request.
         .task { await discoverModel.load() }

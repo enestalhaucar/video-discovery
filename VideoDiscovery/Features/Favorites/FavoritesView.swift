@@ -5,7 +5,6 @@ struct FavoritesView: View {
     var onBrowse: () -> Void = {}
 
     @Environment(FavoritesStore.self) private var favoritesStore
-    @State private var emptyHeartPulse = 0
 
     var body: some View {
         List {
@@ -13,38 +12,39 @@ struct FavoritesView: View {
                 NavigationLink(value: video) {
                     FavoriteRow(video: video)
                 }
+                .listRowInsets(EdgeInsets(
+                    top: Theme.Space.pt12,
+                    leading: Theme.Space.pt16,
+                    bottom: Theme.Space.pt12,
+                    trailing: Theme.Space.pt4
+                ))
+                .listRowBackground(Theme.surface)
                 .swipeActions(edge: .trailing) {
                     Button("Remove", systemImage: "trash", role: .destructive) {
                         withAnimation(Motion.listChange) { favoritesStore.remove(video) }
                     }
+                    .tint(Theme.destructiveFill)
                 }
             }
         }
+        .listStyle(.insetGrouped)
+        .scrollContentBackground(.hidden)
+        .background(Theme.background)
         .animation(Motion.listChange, value: favoritesStore.favorites)
         .overlay {
             if favoritesStore.favorites.isEmpty {
-                emptyState
-                    .transition(.opacity)
+                StateView(
+                    symbol: "heart",
+                    title: "No favourites yet",
+                    message: "Tap the heart on any video to save it here.",
+                    actionTitle: "Browse videos",
+                    pulses: true,
+                    action: onBrowse
+                )
+                .transition(.opacity)
             }
         }
         .navigationTitle("Favourites")
-    }
-
-    private var emptyState: some View {
-        ContentUnavailableView {
-            Label {
-                Text("No favourites yet")
-            } icon: {
-                Image(systemName: "heart")
-                    .symbolEffect(.bounce, value: emptyHeartPulse)
-            }
-        } description: {
-            Text("Tap the heart on any video to save it here.")
-        } actions: {
-            Button("Browse videos", action: onBrowse)
-                .buttonStyle(.bordered)
-        }
-        .onAppear { emptyHeartPulse += 1 }
     }
 }
 
@@ -52,12 +52,13 @@ private struct FavoriteRow: View {
     let video: Video
 
     var body: some View {
-        HStack(spacing: 12) {
-            ThumbnailView(url: video.thumbnailURL, cornerRadius: 10)
-                .frame(width: 100)
-            VStack(alignment: .leading, spacing: 6) {
+        HStack(spacing: Theme.Space.pt12) {
+            ThumbnailView(url: video.thumbnailURL, cornerRadius: Theme.Radius.compact)
+                .frame(width: Theme.Size.rowThumbWidth)
+            VStack(alignment: .leading, spacing: Theme.Space.pt4) {
                 Text(video.title)
                     .font(.headline)
+                    .foregroundStyle(Theme.label)
                     .lineLimit(2)
                 CategoryTag(category: video.category)
             }
@@ -66,7 +67,6 @@ private struct FavoriteRow: View {
             Spacer(minLength: 0)
             FavoriteButton(video: video)
         }
-        .padding(.vertical, 4)
     }
 }
 

@@ -4,16 +4,20 @@ struct DiscoverView: View {
     @Bindable var model: DiscoverModel
     let zoomNamespace: Namespace.ID
 
+    // While a retry is in flight the error stays on screen with a spinner in its button.
+    @State private var isRetrying = false
+    @State private var lastError = ""
+
     var body: some View {
-        // One scroll view for every state keeps the large title tracking it.
+        // One scroll view for every state keeps the navigation title tracking it.
         ScrollView {
-            LazyVStack(spacing: 24) {
-                if isLoading {
+            LazyVStack(spacing: Theme.Space.pt20) {
+                if showsSkeleton {
                     ForEach(0..<DiscoverModel.batchSize, id: \.self) { _ in
                         SkeletonCard()
                     }
                     .transition(.opacity)
-                } else {
+                } else if model.state == .loaded {
                     ForEach(Array(model.displayedVideos.enumerated()), id: \.element.id) { index, video in
                         VideoCard(video: video, zoomNamespace: zoomNamespace)
                             .transition(revealTransition(index: index))
@@ -21,15 +25,20 @@ struct DiscoverView: View {
                     footer
                 }
             }
-            .padding(.horizontal)
-            .padding(.bottom, 24)
+            .padding(.horizontal, Theme.Space.pt16)
+            .padding(.top, Theme.Space.pt8)
             .animation(Motion.crossfade, value: model.query)
         }
-        .scrollDisabled(isLoading)
-        .overlay { emptyState }
+        .scrollDisabled(showsSkeleton)
+        .background(Theme.background)
+        .overlay { stateView }
         .animation(Motion.contentFade, value: model.state)
+        .onChange(of: model.state) { _, state in
+            if case .failed(let message) = state {
+                lastError = message
+            }
+        }
         .navigationTitle("Discover")
-        // Always visible, so search is easy to find; on iOS 26+ this keeps the title inline.
         .searchable(
             text: $model.query,
             placement: .navigationBarDrawer(displayMode: .always),
@@ -37,37 +46,43 @@ struct DiscoverView: View {
         )
     }
 
-    private var isLoading: Bool {
-        model.state == .idle || model.state == .loading
+    private var showsSkeleton: Bool {
+        model.state == .idle || (model.state == .loading && !isRetrying)
     }
 
-    @ViewBuilder private var emptyState: some View {
-        switch model.state {
-        case .failed(let message):
-            ContentUnavailableView {
-                Label("Couldn't load videos", systemImage: "wifi.exclamationmark")
-            } description: {
-                Text(message)
-            } actions: {
-                Button("Try again") {
-                    Task { await model.retry() }
-                }
-                .buttonStyle(.bordered)
-            }
-            .transition(.opacity)
-        case .loaded where model.catalogue.isEmpty:
-            ContentUnavailableView(
-                "No videos yet",
-                systemImage: "film.stack",
-                description: Text("New videos will show up here.")
+    @ViewBuilder private var stateView: some View {
+        if case .failed = model.state {
+            errorView
+        } else if isRetrying {
+            errorView
+        } else if model.state == .loaded, model.catalogue.isEmpty {
+            StateView(symbol: "film.stack", title: "No videos yet", message: "New videos will show up here.")
+                .transition(.opacity)
+        } else if model.state == .loaded, model.displayedVideos.isEmpty {
+            StateView(
+                symbol: "magnifyingglass",
+                title: "No results for “\(model.query.trimmingCharacters(in: .whitespaces))”",
+                message: "Try a different title."
             )
             .transition(.opacity)
-        case .loaded where model.displayedVideos.isEmpty:
-            ContentUnavailableView.search(text: model.query)
-                .transition(.opacity)
-        default:
-            EmptyView()
         }
+    }
+
+    private var errorView: some View {
+        StateView(
+            symbol: "wifi.exclamationmark",
+            title: "Couldn’t load videos",
+            message: lastError.isEmpty ? nil : lastError,
+            actionTitle: "Try again",
+            isLoading: isRetrying
+        ) {
+            isRetrying = true
+            Task {
+                await model.retry()
+                isRetrying = false
+            }
+        }
+        .transition(.opacity)
     }
 
     /// New cards fade in and rise, one after another within a batch.
@@ -82,14 +97,14 @@ struct DiscoverView: View {
 
     @ViewBuilder private var footer: some View {
         if model.canRevealMore {
-            HStack(spacing: 8) {
+            VStack(spacing: Theme.Space.pt8) {
                 ProgressView()
                 Text("Loading more…")
+                    .font(.subheadline)
             }
-            .font(.footnote)
-            .foregroundStyle(.secondary)
+            .foregroundStyle(Theme.labelSecondary)
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
+            .padding(.bottom, Theme.Space.pt32)
             // Reveal only once the footer is actually on screen, not when the lazy stack prepares it.
             .onGeometryChange(for: Bool.self) { proxy in
                 let visibleHeight = proxy.bounds(of: .scrollView)?.height ?? 0
@@ -99,13 +114,49 @@ struct DiscoverView: View {
                     withAnimation(Motion.reveal) { model.revealMore() }
                 }
             }
-        } else if !model.isSearching && !model.catalogue.isEmpty {
-            Label("You're all caught up", systemImage: "checkmark.circle")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-                .padding(.vertical, 12)
-                .transition(.opacity.combined(with: .scale(scale: 0.9)).animation(Motion.endOfList))
+        } else if !model.isSearching {
+            EndOfListView()
         }
+    }
+}
+
+/// "You’re all caught up" with a checkmark that draws itself.
+private struct EndOfListView: View {
+    @State private var progress: CGFloat = 0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        HStack(spacing: 6) {
+            CheckmarkShape()
+                .trim(from: 0, to: progress)
+                .stroke(style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
+                .frame(width: 12, height: 12)
+            Text("You’re all caught up")
+                .font(.footnote)
+        }
+        .foregroundStyle(Theme.labelSecondary)
+        .frame(maxWidth: .infinity)
+        .padding(.top, Theme.Space.pt4)
+        .padding(.bottom, Theme.Space.pt32)
+        .accessibilityElement(children: .combine)
+        .transition(.opacity.animation(Motion.endOfList))
+        .onAppear {
+            if reduceMotion {
+                progress = 1
+            } else {
+                withAnimation(Motion.endOfList.delay(0.1)) { progress = 1 }
+            }
+        }
+    }
+}
+
+private struct CheckmarkShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.minX, y: rect.midY))
+        path.addLine(to: CGPoint(x: rect.width * 0.38, y: rect.maxY * 0.85))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY + rect.height * 0.12))
+        return path
     }
 }
 
