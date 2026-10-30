@@ -28,7 +28,7 @@ struct FavoriteButton: View {
         } label: {
             Image(systemName: isFavorite ? "heart.fill" : "heart")
                 .font(style == .overlay ? .body.weight(.semibold) : .title3)
-                .foregroundStyle(isFavorite ? AnyShapeStyle(.pink) : unselectedStyle)
+                .foregroundStyle(isFavorite ? Color.pink : unselectedColor)
                 .contentTransition(.symbolEffect(.replace))
                 .symbolEffect(.bounce, value: reduceMotion ? false : isFavorite)
                 .frame(width: 36, height: 36)
@@ -50,8 +50,9 @@ struct FavoriteButton: View {
         .accessibilityLabel(isFavorite ? "Remove from Favourites" : "Add to Favourites")
     }
 
-    private var unselectedStyle: AnyShapeStyle {
-        style == .overlay ? AnyShapeStyle(.primary) : AnyShapeStyle(.secondary)
+    // Concrete colours: inside a button, `.primary` resolves to the accent tint.
+    private var unselectedColor: Color {
+        style == .overlay ? .primary : .secondary
     }
 }
 

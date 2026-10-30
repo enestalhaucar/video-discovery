@@ -6,6 +6,7 @@ struct RootView: View {
     // Each tab owns its navigation path here, so switching tabs never resets a stack.
     @State private var discoverPath = NavigationPath()
     @State private var favoritesPath = NavigationPath()
+    @Namespace private var zoomNamespace
 
     init(catalogService: CatalogServicing) {
         _discoverModel = State(initialValue: DiscoverModel(service: catalogService))
@@ -14,8 +15,11 @@ struct RootView: View {
     var body: some View {
         TabView(selection: $selectedTab) {
             NavigationStack(path: $discoverPath) {
-                DiscoverView(model: discoverModel)
-                    .navigationDestination(for: Video.self) { VideoDetailView(video: $0) }
+                DiscoverView(model: discoverModel, zoomNamespace: zoomNamespace)
+                    .navigationDestination(for: Video.self) { video in
+                        VideoDetailView(video: video)
+                            .zoomTransition(sourceID: video.id, in: zoomNamespace)
+                    }
             }
             .environment(\.isTabActive, selectedTab == .discover)
             .tabItem { Label("Discover", systemImage: "play.rectangle") }
