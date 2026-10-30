@@ -12,6 +12,7 @@ opt_in_rules:
   - empty_string
   - explicit_init
   - fatal_error_message
+  - force_unwrapping
   - first_where
   - implicitly_unwrapped_optional
   - last_where

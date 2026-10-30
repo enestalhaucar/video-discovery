@@ -1,9 +1,12 @@
 import SwiftUI
 
+// Placeholder until the designed Discover feed lands.
 struct DiscoverView: View {
     var body: some View {
-        Text("Discover")
-            .navigationTitle("Discover")
+        List(Video.samples) { video in
+            NavigationLink(video.title, value: video)
+        }
+        .navigationTitle("Discover")
     }
 }
 

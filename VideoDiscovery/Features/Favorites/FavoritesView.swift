@@ -1,9 +1,14 @@
 import SwiftUI
 
+// Placeholder until the designed Favourites list lands.
 struct FavoritesView: View {
+    @Environment(FavoritesStore.self) private var favoritesStore
+
     var body: some View {
-        Text("Favourites")
-            .navigationTitle("Favourites")
+        List(favoritesStore.favorites) { video in
+            NavigationLink(video.title, value: video)
+        }
+        .navigationTitle("Favourites")
     }
 }
 
@@ -11,4 +16,5 @@ struct FavoritesView: View {
     NavigationStack {
         FavoritesView()
     }
+    .environment(FavoritesStore(persistence: FileFavoritesPersistence()))
 }
