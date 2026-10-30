@@ -14,13 +14,24 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
 
 @MainActor
 enum OrientationLock {
-    /// Allows `mask` and rotates the window to `orientation` straight away.
-    static func set(_ mask: UIInterfaceOrientationMask, rotatingTo orientation: UIInterfaceOrientationMask) {
+    /// Allows `mask` without forcing a rotation: the screen follows the device when the user turns it,
+    /// with the system's own rotation animation.
+    static func allow(_ mask: UIInterfaceOrientationMask) {
         AppDelegate.orientationLock = mask
-        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
-        for scene in scenes {
+        for scene in windowScenes {
             scene.keyWindow?.rootViewController?.setNeedsUpdateOfSupportedInterfaceOrientations()
-            scene.requestGeometryUpdate(.iOS(interfaceOrientations: orientation)) { _ in }
         }
+    }
+
+    /// Allows only `mask` and animates the window into it straight away.
+    static func force(_ mask: UIInterfaceOrientationMask) {
+        allow(mask)
+        for scene in windowScenes {
+            scene.requestGeometryUpdate(.iOS(interfaceOrientations: mask)) { _ in }
+        }
+    }
+
+    private static var windowScenes: [UIWindowScene] {
+        UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
     }
 }

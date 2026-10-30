@@ -1,6 +1,7 @@
 import SwiftUI
 
-/// Full-screen playback in landscape, sharing the detail screen's player. Tap to show or hide the controls.
+/// Full-screen playback sharing the detail screen's player. It opens in the current orientation and turns to
+/// landscape when the user turns the phone. Tap to show or hide the controls.
 struct FullscreenPlayerView: View {
     let player: PlayerModel
 
@@ -33,8 +34,9 @@ struct FullscreenPlayerView: View {
         .environment(\.colorScheme, .dark)
         .statusBarHidden()
         .persistentSystemOverlays(.hidden)
-        .onAppear { OrientationLock.set(.landscape, rotatingTo: .landscapeRight) }
-        .onDisappear { OrientationLock.set(.portrait, rotatingTo: .portrait) }
+        .onAppear { OrientationLock.allow(.allButUpsideDown) }
+        // The rest of the app is portrait, so leaving full screen turns back even if the phone is sideways.
+        .onDisappear { OrientationLock.force(.portrait) }
     }
 
     private var controls: some View {
