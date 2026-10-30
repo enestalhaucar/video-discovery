@@ -119,7 +119,8 @@ final class PlayerModel {
     func retry() {
         guard phase == .failed else { return }
         phase = .loading
-        attach(AVPlayerItem(url: url))
+        // A copy saved earlier still plays when the network has gone.
+        attach(AVPlayerItem(url: MediaCache.shared.playableURL(for: url)))
     }
 
     // MARK: - Observation
@@ -196,6 +197,7 @@ final class PlayerModel {
             if phase == .loading {
                 phase = .ready
             }
+            MediaCache.shared.saveForReplay(url)
         case .failed:
             handleFailure(item.error, of: item)
         default:

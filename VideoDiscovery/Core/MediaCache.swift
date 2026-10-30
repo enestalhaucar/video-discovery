@@ -65,16 +65,22 @@ final class MediaCache {
     // MARK: - Videos
 
     /// The saved file when this video was downloaded earlier, otherwise `remote` so it streams at once.
-    ///
-    /// A miss also starts saving the video for next time.
     func playableURL(for remote: URL) -> URL {
         let file = fileURL(for: remote)
         if FileManager.default.fileExists(atPath: file.path(percentEncoded: false)) {
             Self.logger.info("Playing \(remote.lastPathComponent, privacy: .public) from session cache")
             return file
         }
-        saveVideo(from: remote, to: file)
         return remote
+    }
+
+    /// Saves the video for a later replay, unless it's already saved or being saved.
+    ///
+    /// The player calls this once its stream is ready, so the copy doesn't compete with the first buffering.
+    func saveForReplay(_ remote: URL) {
+        let file = fileURL(for: remote)
+        guard !FileManager.default.fileExists(atPath: file.path(percentEncoded: false)) else { return }
+        saveVideo(from: remote, to: file)
     }
 
     private func saveVideo(from remote: URL, to file: URL) {

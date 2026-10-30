@@ -43,6 +43,8 @@ struct FullscreenPlayerView: View {
         VStack {
             HStack {
                 Button("Exit full screen", systemImage: "arrow.down.right.and.arrow.up.left") {
+                    // Turn back first, so the detail screen never shows sideways during the dismissal.
+                    OrientationLock.force(.portrait)
                     dismiss()
                 }
                 .labelStyle(.iconOnly)
@@ -62,6 +64,9 @@ struct FullscreenPlayerView: View {
                 }
                 .frame(maxWidth: Metrics.controlsMaxWidth)
                 .background(Theme.stageMaterial, in: RoundedRectangle(cornerRadius: Theme.Radius.card))
+                // Taps between the controls shouldn't hide the panel.
+                .contentShape(Rectangle())
+                .onTapGesture {}
             }
         }
         .padding(Theme.Space.pt16)
