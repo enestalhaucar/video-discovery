@@ -54,13 +54,14 @@ private struct FavoriteRow: View {
     var body: some View {
         HStack(spacing: 12) {
             ThumbnailView(url: video.thumbnailURL, cornerRadius: 10)
-                .frame(width: 112)
+                .frame(width: 100)
             VStack(alignment: .leading, spacing: 6) {
                 Text(video.title)
                     .font(.headline)
                     .lineLimit(2)
                 CategoryTag(category: video.category)
             }
+            .layoutPriority(1)
             .accessibilityElement(children: .combine)
             Spacer(minLength: 0)
             FavoriteButton(video: video)
