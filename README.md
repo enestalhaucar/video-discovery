@@ -66,7 +66,12 @@ VideoDiscoveryTests/   the two unit tests and a mock service
   ready, playing, paused, ended, failed) fed by Combine publishers delivered on the main queue.
 - **Pausing is explicit.** The detail screen pauses on disappear, when its tab stops being the
   selected one (an environment value set by `RootView`) and when the scene leaves the foreground.
-  Nothing autoplays.
+  The video starts on its own only when the detail screen first opens; after a pause it waits for
+  the user. The feed never autoplays.
+- **Zoom and full screen.** Pinch the video to zoom (1×–3×, drag to pan, double-tap to reset). The
+  corner button opens a landscape full-screen player that shares the same `PlayerModel`, so position
+  and state carry over. The app is otherwise portrait: an app delegate holds the orientation lock
+  and full screen lifts it.
 - **The catalogue load starts at the root**, so switching tabs during the first request can't cancel
   it.
 - **A small design system, applied as tokens.** The look ("Quiet Cinema") was designed first as a
@@ -91,7 +96,8 @@ VideoDiscoveryTests/   the two unit tests and a mock service
   top of the feed. Navigation and tab bars are the system ones, so they take each iOS version's own
   look (Liquid Glass on iOS 26+) and keep swipe-back.
 - Favourites are listed newest first.
-- No autoplay on the detail screen, and no automatic resume after a pause.
+- The detail screen plays as soon as it first opens (a product decision made after testing); it
+  never resumes on its own after a pause.
 - Pull-to-refresh is left out: the brief asks for a single catalogue request, and retry covers
   failures.
 - English UI with British spelling ("Favourites"), iPhone only.
@@ -142,8 +148,10 @@ _Filled in at submission._
   thumbnails instant when scrolling back.
 - **UI and snapshot tests** for each screen state. The debug launch arguments are already there to
   drive them.
-- **Larger layouts.** The app is iPhone and portrait only for now; landscape and iPad would need
-  their own layouts (a grid, and a detail screen that fits the video beside the controls).
-- **Player extras:** Picture in Picture, AirPlay and remembering the playback position.
+- **Larger layouts.** Apart from full-screen playback the app is iPhone and portrait only; landscape
+  and iPad would need their own layouts (a grid, and a detail screen with the video beside the
+  controls).
+- **Player extras:** Picture in Picture, AirPlay, auto-hiding full-screen controls and remembering
+  the playback position.
 - **Localisation.** Strings are English only and not yet in a String Catalog.
 - Only verified on the iOS 27 simulator with Xcode 27; not run on an iOS 17 device.
