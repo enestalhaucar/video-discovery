@@ -6,6 +6,8 @@ struct VideoDetailView: View {
     @State private var player: PlayerModel
     @State private var skipEvent: SkipEvent?
     @State private var skipCount = 0
+    @State private var hasAutoPlayed = false
+    @State private var isFullscreen = false
     @Environment(\.isTabActive) private var isTabActive
     @Environment(\.scenePhase) private var scenePhase
 
@@ -35,8 +37,21 @@ struct VideoDetailView: View {
                 FavoriteButton(video: video)
             }
         }
-        .onAppear { player.activate() }
-        .onDisappear { player.deactivate() }
+        .onAppear {
+            player.activate()
+            // Plays straight away on the first visit only; coming back after a pause stays paused.
+            if !hasAutoPlayed {
+                hasAutoPlayed = true
+                player.play()
+            }
+        }
+        .onDisappear {
+            // The full-screen cover hides this screen but keeps using its player.
+            if !isFullscreen { player.deactivate() }
+        }
+        .fullScreenCover(isPresented: $isFullscreen) {
+            FullscreenPlayerView(player: player)
+        }
         .onChange(of: isTabActive) { _, isActive in
             if !isActive { player.pause() }
         }
@@ -51,15 +66,34 @@ struct VideoDetailView: View {
         }
     }
 
-    /// Edge to edge, 16:9, on black.
+    /// Edge to edge, 16:9, on black. Pinch to zoom; the corner button opens full screen.
     private var stage: some View {
-        PlayerSurface(player: player.player)
+        ZoomableVideo(player: player.player)
             .background(Theme.stage)
             .aspectRatio(16 / 9, contentMode: .fit)
             .overlay { PlayerStageOverlay(player: player, skip: skipEvent) }
+            .overlay(alignment: .bottomTrailing) {
+                if player.phase != .failed {
+                    fullscreenButton
+                }
+            }
             .clipped()
             .accessibilityElement(children: .contain)
             .accessibilityLabel("Video player")
+    }
+
+    private var fullscreenButton: some View {
+        Button("Full screen", systemImage: "arrow.up.left.and.arrow.down.right") {
+            isFullscreen = true
+        }
+        .labelStyle(.iconOnly)
+        .font(.subheadline.weight(.semibold))
+        .foregroundStyle(Theme.onStage)
+        .frame(width: Theme.Size.heart, height: Theme.Size.heart)
+        .background(Theme.stageMaterial, in: Circle())
+        .frame(width: Theme.Size.hit, height: Theme.Size.hit)
+        .buttonStyle(PressedOpacityStyle())
+        .padding(Theme.Space.pt4)
     }
 
     private var info: some View {

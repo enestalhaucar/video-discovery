@@ -4,6 +4,7 @@ import SwiftUI
 
 @main
 struct VideoDiscoveryApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var favoritesStore: FavoritesStore
     private let catalogService: CatalogServicing
 
