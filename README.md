@@ -75,6 +75,10 @@ VideoDiscoveryTests/   the two unit tests and a mock service
   literal colours. The structure stays native (`NavigationStack`, `TabView`, `List`, `.searchable`,
   SF Symbols). Discover uses large 16:9 cards: with small rows, three videos don't fill the screen
   and the next batch would appear without scrolling. Motion turns into plain fades with Reduce Motion.
+- **A session-scoped media cache** (`MediaCache`). Thumbnails are kept in memory. A video streams on
+  its first view and is saved to a temporary folder in the background, so opening it again plays the
+  local file. The folder is emptied at every launch (iOS has no callback for a force-quit), so nothing
+  outlives the app. Failed downloads, such as the unavailable preview, are never saved.
 - **SwiftLint as a Run Script phase** rather than the SPM build-tool plugin: no package to trust or
   download, and the project stays dependency-free.
 - **Swift 6 language mode** with strict concurrency, iOS 17 APIs only.
@@ -138,8 +142,6 @@ _Filled in at submission._
 
 ## Unfinished work and next steps
 
-- **Image caching.** `AsyncImage` only uses the shared URL cache; a small image cache would make
-  thumbnails instant when scrolling back.
 - **UI and snapshot tests** for each screen state. The debug launch arguments are already there to
   drive them.
 - **Larger layouts.** The app is iPhone and portrait only for now; landscape and iPad would need
