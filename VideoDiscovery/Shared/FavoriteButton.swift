@@ -38,13 +38,13 @@ struct FavoriteButton: View {
                     glyph.scaleEffect(animates ? scale : 1)
                 } keyframes: { _ in
                     SpringKeyframe(1.3, duration: 0.14, spring: .snappy)
-                    SpringKeyframe(1.0, spring: Spring(response: 0.35, dampingRatio: 0.5))
+                    SpringKeyframe(1.0, spring: Motion.heartPop)
                 }
                 .keyframeAnimator(initialValue: 1.0, trigger: dipCount) { glyph, scale in
                     glyph.scaleEffect(animates ? scale : 1)
                 } keyframes: { _ in
                     SpringKeyframe(0.85, duration: 0.1, spring: .snappy)
-                    SpringKeyframe(1.0, spring: Spring(response: 0.3, dampingRatio: 0.7))
+                    SpringKeyframe(1.0, spring: Motion.heartDip)
                 }
                 .frame(width: Theme.Size.heart, height: Theme.Size.heart)
                 .background {
@@ -63,6 +63,7 @@ struct FavoriteButton: View {
         .buttonStyle(PressedOpacityStyle())
         .sensoryFeedback(.impact(weight: .light), trigger: isFavorite)
         .accessibilityLabel(isFavorite ? "Remove from favourites" : "Save to favourites")
+        .accessibilityValue(video.title)
         .accessibilityAddTraits(isFavorite ? .isSelected : [])
     }
 }

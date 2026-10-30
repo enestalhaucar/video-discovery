@@ -26,7 +26,11 @@ struct FileFavoritesPersistence: FavoritesPersisting {
             let data = try Data(contentsOf: fileURL)
             return try JSONDecoder().decode([Video].self, from: data)
         } catch {
+            // Keep the unreadable file instead of letting the next save overwrite it.
             Self.logger.error("Couldn't read favourites: \(error.localizedDescription)")
+            let backupURL = fileURL.deletingPathExtension().appendingPathExtension("corrupt.json")
+            try? FileManager.default.removeItem(at: backupURL)
+            try? FileManager.default.moveItem(at: fileURL, to: backupURL)
             return []
         }
     }

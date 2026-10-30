@@ -4,6 +4,7 @@ struct DiscoverView: View {
     @Bindable var model: DiscoverModel
     let zoomNamespace: Namespace.ID
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     // While a retry is in flight the error stays on screen with a spinner in its button.
     @State private var isRetrying = false
     @State private var lastError = ""
@@ -87,6 +88,7 @@ struct DiscoverView: View {
 
     /// New cards fade in and rise, one after another within a batch.
     private func revealTransition(index: Int) -> AnyTransition {
+        guard !reduceMotion else { return .opacity }
         let delay = Double(index % DiscoverModel.batchSize) * Motion.revealStagger
         return .asymmetric(
             insertion: .opacity.combined(with: .offset(y: Motion.revealOffset)),
@@ -114,7 +116,7 @@ struct DiscoverView: View {
                     withAnimation(Motion.reveal) { model.revealMore() }
                 }
             }
-        } else if !model.isSearching {
+        } else if !model.isSearching && !model.catalogue.isEmpty {
             EndOfListView()
         }
     }
@@ -163,7 +165,9 @@ private struct CheckmarkShape: Shape {
 #Preview("Loaded") {
     @Previewable @Namespace var namespace
     NavigationStack {
-        DiscoverView(model: DiscoverModel(service: StubCatalogService()), zoomNamespace: namespace)
+        let model = DiscoverModel(service: StubCatalogService())
+        DiscoverView(model: model, zoomNamespace: namespace)
+            .task { await model.load() }
     }
     .environment(FavoritesStore(persistence: FileFavoritesPersistence()))
 }
@@ -171,7 +175,9 @@ private struct CheckmarkShape: Shape {
 #Preview("Error") {
     @Previewable @Namespace var namespace
     NavigationStack {
-        DiscoverView(model: DiscoverModel(service: StubCatalogService(behavior: .error)), zoomNamespace: namespace)
+        let model = DiscoverModel(service: StubCatalogService(behavior: .error))
+        DiscoverView(model: model, zoomNamespace: namespace)
+            .task { await model.load() }
     }
     .environment(FavoritesStore(persistence: FileFavoritesPersistence()))
 }

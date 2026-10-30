@@ -13,9 +13,9 @@ enum Motion {
     /// Card press and release.
     static let press = Animation.easeOut(duration: 0.12)
     static let release = Animation.spring(response: 0.3, dampingFraction: 0.7)
-    /// Heart toggled on and off.
-    static let heartOn = Animation.spring(response: 0.35, dampingFraction: 0.5)
-    static let heartOff = Animation.spring(response: 0.3, dampingFraction: 0.7)
+    /// Heart toggled on (pops to 1.3 with a burst) and off (dips to 0.85).
+    static let heartPop = Spring(response: 0.35, dampingRatio: 0.5)
+    static let heartDip = Spring(response: 0.3, dampingRatio: 0.7)
     static let heartBurstDuration = 0.3
     /// Overlays on the player stage.
     static let overlay = Animation.easeInOut(duration: 0.18)
