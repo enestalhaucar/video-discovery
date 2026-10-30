@@ -26,7 +26,7 @@ struct RootView: View {
             .tag(AppTab.discover)
 
             NavigationStack(path: $favoritesPath) {
-                FavoritesView()
+                FavoritesView { selectedTab = .discover }
                     .navigationDestination(for: Video.self) { VideoDetailView(video: $0) }
             }
             .environment(\.isTabActive, selectedTab == .favorites)
