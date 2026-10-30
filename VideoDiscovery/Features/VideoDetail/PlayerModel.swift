@@ -46,7 +46,7 @@ final class PlayerModel {
 
     /// Builds the item on the first call, then (re)attaches the observers and catches up with the player.
     func activate() {
-        attach(item ?? AVPlayerItem(url: url))
+        attach(item ?? AVPlayerItem(url: MediaCache.shared.playableURL(for: url)))
     }
 
     /// Pauses and drops the observers. The item, position and phase stay for the next `activate()`.
