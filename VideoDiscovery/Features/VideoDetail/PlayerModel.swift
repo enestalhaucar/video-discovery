@@ -170,7 +170,8 @@ final class PlayerModel {
             .store(in: &observers)
 
         timeObserver = player.addPeriodicTimeObserver(
-            forInterval: CMTime(seconds: 0.25, preferredTimescale: 600),
+            // 30 updates a second keep the scrubber smooth on the 5–30 s clips in the catalogue.
+            forInterval: CMTime(value: 1, timescale: 30),
             queue: .main
         ) { [weak self] _ in
             MainActor.assumeIsolated { self?.tick() }

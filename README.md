@@ -142,8 +142,8 @@ _Filled in at submission._
   thumbnails instant when scrolling back.
 - **UI and snapshot tests** for each screen state. The debug launch arguments are already there to
   drive them.
-- **Larger layouts.** The app targets iPhone; cards stretch in landscape, but there's no grid or
-  iPad layout.
+- **Larger layouts.** The app is iPhone and portrait only for now; landscape and iPad would need
+  their own layouts (a grid, and a detail screen that fits the video beside the controls).
 - **Player extras:** Picture in Picture, AirPlay and remembering the playback position.
 - **Localisation.** Strings are English only and not yet in a String Catalog.
 - Only verified on the iOS 27 simulator with Xcode 27; not run on an iOS 17 device.

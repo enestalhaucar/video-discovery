@@ -50,11 +50,13 @@ struct Scrubber: View {
         .onChange(of: gestureTime) { _, newValue in dragTime = newValue }
         .accessibilityElement()
         .accessibilityLabel("Playback position")
-        .accessibilityValue("\(PlaybackClock.text(displayTime)) of \(PlaybackClock.text(duration))")
+        .accessibilityValue(
+            duration > 0 ? "\(PlaybackClock.text(displayTime)) of \(PlaybackClock.text(duration))" : "Loading"
+        )
         .accessibilityAdjustableAction { direction in
             switch direction {
-            case .increment: onAdjust(10)
-            case .decrement: onAdjust(-10)
+            case .increment: onAdjust(SkipDirection.forward.seconds)
+            case .decrement: onAdjust(SkipDirection.back.seconds)
             @unknown default: break
             }
         }
@@ -87,7 +89,7 @@ struct Scrubber: View {
                     .transition(.opacity)
             }
         }
-        .animation(StageMotion.fadeIn, value: isDragging)
+        .animation(Motion.fadeIn, value: isDragging)
         .allowsHitTesting(false)
         .accessibilityHidden(true)
     }

@@ -1,5 +1,28 @@
 import SwiftUI
 
+/// Which way a skip button moves the playhead.
+enum SkipDirection {
+    case back, forward
+
+    var seconds: Double {
+        switch self {
+        case .back: -10
+        case .forward: 10
+        }
+    }
+}
+
+/// One skip request. The id makes two skips in a row in the same direction distinct, so the pill restarts.
+struct SkipEvent: Equatable {
+    let direction: SkipDirection
+    let id: Int
+}
+
+/// The play triangle is lopsided, so it is nudged right to look centred.
+enum PlayGlyph {
+    static let nudge: CGFloat = 1.5
+}
+
 /// Formats seconds as m:ss.
 enum PlaybackClock {
     static let unknown = "--:--"
@@ -79,11 +102,6 @@ private struct PlayPauseButton: View {
     let showsPause: Bool
     let action: () -> Void
 
-    private enum Metrics {
-        /// The play triangle is lopsided, so it is nudged right to look centred.
-        static let playNudge: CGFloat = 1.5
-    }
-
     var body: some View {
         Button(action: action) {
             Image(systemName: showsPause ? "pause.fill" : "play.fill")
@@ -91,7 +109,7 @@ private struct PlayPauseButton: View {
                 .foregroundStyle(Theme.onAccent)
                 .contentTransition(.symbolEffect(.replace))
                 .animation(Motion.crossfade, value: showsPause)
-                .offset(x: showsPause ? 0 : Metrics.playNudge)
+                .offset(x: showsPause ? 0 : PlayGlyph.nudge)
                 .frame(width: Theme.Size.play, height: Theme.Size.play)
                 .background(Theme.accent, in: Circle())
         }

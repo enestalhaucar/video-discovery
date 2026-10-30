@@ -68,14 +68,6 @@ struct FavoriteButton: View {
     }
 }
 
-/// Icon-only buttons dim while pressed.
-struct PressedOpacityStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .opacity(configuration.isPressed ? Theme.Opacity.pressed : 1)
-    }
-}
-
 /// Six accent dots that fly out of the heart and fade.
 private struct HeartBurst: View {
     let trigger: Int

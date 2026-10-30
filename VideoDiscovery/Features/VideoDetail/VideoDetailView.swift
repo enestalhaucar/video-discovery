@@ -35,12 +35,6 @@ struct VideoDetailView: View {
                 FavoriteButton(video: video)
             }
         }
-        .task(id: skipEvent?.id) {
-            guard skipEvent != nil else { return }
-            try? await Task.sleep(for: .seconds(Motion.skipPillDuration))
-            guard !Task.isCancelled else { return }
-            skipEvent = nil
-        }
         .onAppear { player.activate() }
         .onDisappear { player.deactivate() }
         .onChange(of: isTabActive) { _, isActive in
@@ -48,6 +42,12 @@ struct VideoDetailView: View {
         }
         .onChange(of: scenePhase) { _, phase in
             if phase != .active { player.pause() }
+        }
+        .onChange(of: player.phase) { _, phase in
+            // The control bar disappears on failure, so VoiceOver users hear why.
+            if phase == .failed {
+                AccessibilityNotification.Announcement("Can’t play this video").post()
+            }
         }
     }
 

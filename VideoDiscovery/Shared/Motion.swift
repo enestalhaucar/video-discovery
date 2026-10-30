@@ -17,6 +17,8 @@ enum Motion {
     static let heartPop = Spring(response: 0.35, dampingRatio: 0.5)
     static let heartDip = Spring(response: 0.3, dampingRatio: 0.7)
     static let heartBurstDuration = 0.3
+    /// Buffering spinner and the scrubber's time bubble fading in.
+    static let fadeIn = Animation.easeOut(duration: 0.15)
     /// Overlays on the player stage.
     static let overlay = Animation.easeIn(duration: 0.18)
     /// Scrubber thumb growing while dragged.

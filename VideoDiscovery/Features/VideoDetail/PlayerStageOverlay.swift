@@ -1,43 +1,5 @@
 import SwiftUI
 
-/// Which way a skip button moves the playhead.
-enum SkipDirection {
-    case back, forward
-
-    var seconds: Double {
-        switch self {
-        case .back: -10
-        case .forward: 10
-        }
-    }
-}
-
-/// One skip request. The id makes two skips in a row in the same direction distinct, so the pill restarts.
-struct SkipEvent: Equatable {
-    let direction: SkipDirection
-    let id: Int
-}
-
-/// Extra timings that the shared `Motion` set doesn't carry.
-enum StageMotion {
-    /// Buffering spinner and the scrubber's time bubble fading in.
-    static let fadeIn = Animation.easeOut(duration: 0.15)
-}
-
-/// Scales down while pressed. Under Reduce Motion it dims instead.
-struct PressedScaleStyle: ButtonStyle {
-    var scale: CGFloat = 0.92
-
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed && !reduceMotion ? scale : 1)
-            .opacity(configuration.isPressed && reduceMotion ? Theme.Opacity.pressed : 1)
-            .animation(Motion.press, value: configuration.isPressed)
-    }
-}
-
 /// Everything that sits on top of the video: spinners, the play button, Replay, the failure message and the
 /// skip pill. The playback controls are never drawn here.
 struct PlayerStageOverlay: View {
@@ -49,8 +11,6 @@ struct PlayerStageOverlay: View {
     private enum Metrics {
         /// Where the skip pill sits, as a share of the stage width, measured from its own edge.
         static let pillInset = 0.18
-        /// The play triangle is lopsided, so it is nudged right to look centred.
-        static let playNudge: CGFloat = 1.5
         static let replayInset: CGFloat = 18
         static let failureTitleGap: CGFloat = 6
     }
@@ -99,12 +59,12 @@ struct PlayerStageOverlay: View {
                 } label: {
                     Image(systemName: "play.fill")
                         .font(.title)
-                        .offset(x: Metrics.playNudge)
+                        .offset(x: PlayGlyph.nudge)
                         .frame(width: Theme.Size.overlayPlay, height: Theme.Size.overlayPlay)
                         .background(Theme.stageMaterial, in: Circle())
                 }
                 .buttonStyle(PressedScaleStyle())
-                .accessibilityLabel("Play")
+                .accessibilityLabel("Play video")
                 .transition(
                     reduceMotion
                         ? .opacity
@@ -189,7 +149,7 @@ private struct BufferingSpinner: View {
             .task {
                 try? await Task.sleep(for: .seconds(Motion.bufferingDelay))
                 guard !Task.isCancelled else { return }
-                withAnimation(StageMotion.fadeIn) { isVisible = true }
+                withAnimation(Motion.fadeIn) { isVisible = true }
             }
     }
 }
@@ -252,26 +212,34 @@ private struct StageButtonStyle: ButtonStyle {
     }
 }
 
-/// The "−10s" / "+10s" flash: in over the first quarter, held, out over the last 30 %.
+/// The "−10s" / "+10s" flash: in over the first quarter, held, out over the last 30 %. Each skip gets a new
+/// pill (keyed by its id), which fades itself out.
 private struct SkipPill: View {
     let direction: SkipDirection
 
     @State private var opacity = 0.0
 
+    private enum Metrics {
+        static let verticalInset: CGFloat = 6
+        static let fadeInShare = 0.25
+        static let holdShare = 0.7
+        static let fadeOutShare = 0.3
+    }
+
     var body: some View {
         Text(direction == .back ? "\u{2212}10s" : "+10s")
             .font(.subheadline)
             .foregroundStyle(Theme.onStage)
-            .padding(.vertical, 6)
+            .padding(.vertical, Metrics.verticalInset)
             .padding(.horizontal, Theme.Space.pt12)
             .background(Theme.stageMaterial, in: Capsule())
             .opacity(opacity)
             .task {
                 let total = Motion.skipPillDuration
-                withAnimation(.easeOut(duration: total * 0.25)) { opacity = 1 }
-                try? await Task.sleep(for: .seconds(total * 0.7))
+                withAnimation(.easeOut(duration: total * Metrics.fadeInShare)) { opacity = 1 }
+                try? await Task.sleep(for: .seconds(total * Metrics.holdShare))
                 guard !Task.isCancelled else { return }
-                withAnimation(.easeOut(duration: total * 0.3)) { opacity = 0 }
+                withAnimation(.easeOut(duration: total * Metrics.fadeOutShare)) { opacity = 0 }
             }
     }
 }
