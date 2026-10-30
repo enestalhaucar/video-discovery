@@ -9,22 +9,25 @@ struct FavoritesView: View {
     var body: some View {
         List {
             ForEach(favoritesStore.favorites) { video in
-                NavigationLink(value: video) {
-                    FavoriteRow(video: video)
-                }
-                .listRowInsets(EdgeInsets(
-                    top: Theme.Space.pt12,
-                    leading: Theme.Space.pt16,
-                    bottom: Theme.Space.pt12,
-                    trailing: Theme.Space.pt4
-                ))
-                .listRowBackground(Theme.surface)
-                .swipeActions(edge: .trailing) {
-                    Button("Remove", systemImage: "trash", role: .destructive) {
-                        withAnimation(Motion.listChange) { favoritesStore.remove(video) }
+                // The link sits invisibly behind the row so the list draws no chevron.
+                FavoriteRow(video: video)
+                    .background {
+                        NavigationLink(value: video) { EmptyView() }
+                            .opacity(0)
                     }
-                    .tint(Theme.destructiveFill)
-                }
+                    .listRowInsets(EdgeInsets(
+                        top: Theme.Space.pt12,
+                        leading: Theme.Space.pt16,
+                        bottom: Theme.Space.pt12,
+                        trailing: Theme.Space.pt4
+                    ))
+                    .listRowBackground(Theme.surface)
+                    .swipeActions(edge: .trailing) {
+                        Button("Remove", systemImage: "trash", role: .destructive) {
+                            withAnimation(Motion.listChange) { favoritesStore.remove(video) }
+                        }
+                        .tint(Theme.destructiveFill)
+                    }
             }
         }
         .listStyle(.insetGrouped)

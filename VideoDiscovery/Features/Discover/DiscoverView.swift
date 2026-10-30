@@ -12,6 +12,9 @@ struct DiscoverView: View {
     var body: some View {
         // One scroll view for every state keeps the navigation title tracking it.
         ScrollView {
+            SearchField(text: $model.query)
+                .padding(.horizontal, Theme.Space.pt16)
+                .padding(.bottom, Theme.Space.pt8)
             LazyVStack(spacing: Theme.Space.pt20) {
                 if showsSkeleton {
                     ForEach(0..<DiscoverModel.batchSize, id: \.self) { _ in
@@ -27,10 +30,10 @@ struct DiscoverView: View {
                 }
             }
             .padding(.horizontal, Theme.Space.pt16)
-            .padding(.top, Theme.Space.pt8)
             .animation(Motion.crossfade, value: model.query)
         }
         .scrollDisabled(showsSkeleton)
+        .scrollDismissesKeyboard(.immediately)
         .background(Theme.background)
         .overlay { stateView }
         .animation(Motion.contentFade, value: model.state)
@@ -40,11 +43,6 @@ struct DiscoverView: View {
             }
         }
         .navigationTitle("Discover")
-        .searchable(
-            text: $model.query,
-            placement: .navigationBarDrawer(displayMode: .always),
-            prompt: "Search videos"
-        )
     }
 
     private var showsSkeleton: Bool {
