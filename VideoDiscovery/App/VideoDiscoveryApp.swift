@@ -10,6 +10,8 @@ struct VideoDiscoveryApp: App {
 
     init() {
         Self.configureAudioSession()
+        // Creating the cache wipes the previous session's files, so do it at launch.
+        _ = MediaCache.shared
         let persistence = FileFavoritesPersistence()
         var catalogService: CatalogServicing = RemoteCatalogService()
         #if DEBUG
