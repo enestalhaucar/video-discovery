@@ -157,8 +157,8 @@ with me:
 
 ## Time spent
 
-About **2 h 30 min** in total, measured with a stopwatch that ran without a pause from receiving the
-case to submission. Roughly:
+**2 h 29 min** in total (2:28:41 on a stopwatch that ran without a pause from receiving the case to
+submission). Roughly:
 
 | Part | Time |
 |---|---|
