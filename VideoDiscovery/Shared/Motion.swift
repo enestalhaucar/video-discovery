@@ -18,7 +18,7 @@ enum Motion {
     static let heartDip = Spring(response: 0.3, dampingRatio: 0.7)
     static let heartBurstDuration = 0.3
     /// Overlays on the player stage.
-    static let overlay = Animation.easeInOut(duration: 0.18)
+    static let overlay = Animation.easeIn(duration: 0.18)
     /// Scrubber thumb growing while dragged.
     static let scrub = Animation.spring(response: 0.25, dampingFraction: 0.8)
     /// Skip arrow rotation and the "+10s" pill.
