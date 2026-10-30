@@ -4,7 +4,8 @@ struct VideoDetailView: View {
     let video: Video
 
     @State private var player: PlayerModel
-    @Environment(FavoritesStore.self) private var favoritesStore
+    @State private var skipEvent: SkipEvent?
+    @State private var skipCount = 0
     @Environment(\.isTabActive) private var isTabActive
     @Environment(\.scenePhase) private var scenePhase
 
@@ -15,34 +16,30 @@ struct VideoDetailView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                PlayerSurface(player: player.player)
-                    .aspectRatio(16 / 9, contentMode: .fit)
-                    .overlay { stageOverlay }
+            VStack(alignment: .leading, spacing: 0) {
+                stage
                 if player.phase != .failed {
-                    controls
-                        .padding(.horizontal)
+                    PlaybackControls(player: player, onSkip: flashSkip)
+                        .transition(.opacity)
                 }
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(video.title)
-                        .font(.title2.bold())
-                    Text(video.category)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    Text(video.description)
-                        .foregroundStyle(.secondary)
-                }
-                .padding(.horizontal)
+                info
             }
+            .padding(.bottom, Theme.Space.pt24)
+            .animation(Motion.crossfade, value: player.phase == .failed)
         }
+        .background(Theme.background)
+        .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            Button(
-                favoritesStore.isFavorite(video) ? "Remove from Favourites" : "Add to Favourites",
-                systemImage: favoritesStore.isFavorite(video) ? "heart.fill" : "heart"
-            ) {
-                favoritesStore.toggle(video)
+            ToolbarItem(placement: .topBarTrailing) {
+                FavoriteButton(video: video)
             }
+        }
+        .task(id: skipEvent?.id) {
+            guard skipEvent != nil else { return }
+            try? await Task.sleep(for: .seconds(Motion.skipPillDuration))
+            guard !Task.isCancelled else { return }
+            skipEvent = nil
         }
         .onAppear { player.activate() }
         .onDisappear { player.deactivate() }
@@ -54,51 +51,36 @@ struct VideoDetailView: View {
         }
     }
 
-    @ViewBuilder private var stageOverlay: some View {
-        switch player.phase {
-        case .loading:
-            ProgressView().tint(.white)
-        case .failed:
-            VStack(spacing: 8) {
-                Text("Can't play this video")
-                    .font(.headline)
-                Button("Try again") { player.retry() }
-                    .buttonStyle(.bordered)
-            }
-            .foregroundStyle(.white)
-        case .ended:
-            Button("Replay", systemImage: "arrow.counterclockwise") { player.replay() }
-                .buttonStyle(.bordered)
-                .tint(.white)
-        case .ready, .playing, .paused:
-            if player.isBuffering {
-                ProgressView().tint(.white)
-            }
-        }
+    /// Edge to edge, 16:9, on black.
+    private var stage: some View {
+        PlayerSurface(player: player.player)
+            .background(Theme.stage)
+            .aspectRatio(16 / 9, contentMode: .fit)
+            .overlay { PlayerStageOverlay(player: player, skip: skipEvent) }
+            .clipped()
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel("Video player")
     }
 
-    private var controls: some View {
-        VStack(spacing: 8) {
-            Slider(
-                value: Binding(get: { player.currentTime }, set: { player.seek(to: $0) }),
-                in: 0...max(player.duration, 0.1)
-            )
-            .disabled(player.duration == 0)
-            HStack {
-                Button("Back 10 seconds", systemImage: "gobackward.10") { player.skip(by: -10) }
-                Spacer()
-                Button(
-                    player.phase == .playing ? "Pause" : "Play",
-                    systemImage: player.phase == .playing ? "pause.fill" : "play.fill"
-                ) {
-                    player.togglePlayback()
-                }
-                Spacer()
-                Button("Forward 10 seconds", systemImage: "goforward.10") { player.skip(by: 10) }
-            }
-            .labelStyle(.iconOnly)
-            .font(.title2)
+    private var info: some View {
+        VStack(alignment: .leading, spacing: Theme.Space.pt8) {
+            Text(video.title)
+                .font(.title2.bold())
+                .foregroundStyle(Theme.label)
+            CategoryTag(category: video.category)
+            Text(video.description)
+                .font(.body)
+                .foregroundStyle(Theme.labelSecondary)
         }
+        .fixedSize(horizontal: false, vertical: true)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, Theme.Space.pt16)
+        .padding(.top, Theme.Space.pt24)
+    }
+
+    private func flashSkip(_ direction: SkipDirection) {
+        skipCount += 1
+        skipEvent = SkipEvent(direction: direction, id: skipCount)
     }
 }
 
