@@ -3,9 +3,9 @@ import SwiftUI
 /// Centred empty, error and no-results states, with at most one bordered action.
 struct StateView: View {
     let symbol: String
-    let title: String
-    var message: String?
-    var actionTitle: String?
+    let title: LocalizedStringKey
+    var message: LocalizedStringKey?
+    var actionTitle: LocalizedStringKey?
     var isLoading = false
     /// Pulses the symbol once when the view appears.
     var pulses = false

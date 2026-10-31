@@ -71,7 +71,7 @@ struct DiscoverView: View {
         StateView(
             symbol: "wifi.exclamationmark",
             title: "Couldn’t load videos",
-            message: lastError.isEmpty ? nil : lastError,
+            message: lastError.isEmpty ? nil : LocalizedStringKey(lastError),
             actionTitle: "Try again",
             isLoading: isRetrying
         ) {

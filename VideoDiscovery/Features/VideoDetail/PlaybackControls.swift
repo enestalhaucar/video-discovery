@@ -114,7 +114,7 @@ private struct PlayPauseButton: View {
                 .background(Theme.accent, in: Circle())
         }
         .buttonStyle(PressedScaleStyle())
-        .accessibilityLabel(showsPause ? "Pause" : "Play")
+        .accessibilityLabel(showsPause ? Text("Pause") : Text("Play"))
     }
 }
 
@@ -143,7 +143,7 @@ private struct SkipButton: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(PressedOpacityStyle())
-        .accessibilityLabel(direction == .back ? "Back 10 seconds" : "Forward 10 seconds")
+        .accessibilityLabel(direction == .back ? Text("Back 10 seconds") : Text("Forward 10 seconds"))
     }
 
     private func nudge() {

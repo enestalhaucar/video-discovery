@@ -13,11 +13,11 @@ enum CatalogError: LocalizedError, Equatable {
     var errorDescription: String? {
         switch self {
         case .offline:
-            "Check your connection and try again."
+            String(localized: "Check your connection and try again.")
         case .server:
-            "The server had a problem. Try again in a moment."
+            String(localized: "The server had a problem. Try again in a moment.")
         case .invalidResponse:
-            "The videos couldn't be read. Try again later."
+            String(localized: "The videos couldn't be read. Try again later.")
         }
     }
 }

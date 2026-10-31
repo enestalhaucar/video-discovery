@@ -61,7 +61,7 @@ struct VideoDetailView: View {
         .onChange(of: player.phase) { _, phase in
             // The control bar disappears on failure, so VoiceOver users hear why.
             if phase == .failed {
-                AccessibilityNotification.Announcement("Can’t play this video").post()
+                AccessibilityNotification.Announcement(String(localized: "Can’t play this video")).post()
             }
         }
     }
