@@ -46,7 +46,7 @@ final class PlayerModel {
 
     /// Builds the item on the first call, then (re)attaches the observers and catches up with the player.
     func activate() {
-        attach(item ?? AVPlayerItem(url: MediaCache.shared.playableURL(for: url)))
+        attach(item ?? MediaCache.shared.playerItem(for: url))
     }
 
     /// Pauses and drops the observers. The item, position and phase stay for the next `activate()`.
@@ -120,7 +120,7 @@ final class PlayerModel {
         guard phase == .failed else { return }
         phase = .loading
         // A copy saved earlier still plays when the network has gone.
-        attach(AVPlayerItem(url: MediaCache.shared.playableURL(for: url)))
+        attach(MediaCache.shared.playerItem(for: url))
     }
 
     // MARK: - Observation
@@ -197,7 +197,6 @@ final class PlayerModel {
             if phase == .loading {
                 phase = .ready
             }
-            MediaCache.shared.saveForReplay(url)
         case .failed:
             handleFailure(item.error, of: item)
         default:

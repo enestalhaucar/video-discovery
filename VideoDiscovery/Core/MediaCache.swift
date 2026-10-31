@@ -1,13 +1,15 @@
+import AVFoundation
 import CryptoKit
 import OSLog
 import UIKit
 
 /// Caches the app's downloads for one session only.
 ///
-/// Thumbnails live in memory. Videos stream on their first view and are saved to a temporary folder in
-/// the background, so a replay plays from the file. The folder is wiped when the cache is created, which
-/// happens once per launch: iOS gives no callback when the app is force-quit, so clearing at the next
-/// launch is what guarantees that nothing outlives a session.
+/// Thumbnails live in memory. A video's first view downloads it once: the same bytes feed the player
+/// (through `CachingResourceLoader`) and end up in a temporary folder, so a replay plays from the file.
+/// The folder is wiped when the cache is created, which happens once per launch: iOS gives no callback
+/// when the app is force-quit, so clearing at the next launch is what guarantees that nothing outlives a
+/// session.
 @MainActor
 final class MediaCache {
     static let shared = MediaCache()
@@ -16,7 +18,7 @@ final class MediaCache {
 
     private let images = NSCache<NSURL, UIImage>()
     private var imageTasks: [URL: Task<UIImage, any Error>] = [:]
-    private var videoTasks: [URL: Task<Void, Never>] = [:]
+    private var videoLoaders: [URL: CachingResourceLoader] = [:]
     private let folder: URL
 
     private init() {
@@ -64,39 +66,36 @@ final class MediaCache {
 
     // MARK: - Videos
 
-    /// The saved file when this video was downloaded earlier, otherwise `remote` so it streams at once.
-    func playableURL(for remote: URL) -> URL {
+    /// A player item for `remote`: the saved file when there is one, otherwise a stream whose one download
+    /// also becomes the saved file.
+    func playerItem(for remote: URL) -> AVPlayerItem {
         let file = fileURL(for: remote)
         if FileManager.default.fileExists(atPath: file.path(percentEncoded: false)) {
             Self.logger.info("Playing \(remote.lastPathComponent, privacy: .public) from session cache")
-            return file
+            return AVPlayerItem(url: file)
         }
-        return remote
+        guard let assetURL = CachingResourceLoader.assetURL(for: remote) else {
+            return AVPlayerItem(url: remote)
+        }
+        let loader = videoLoaders[remote] ?? makeLoader(for: remote, saving: file)
+        let asset = AVURLAsset(url: assetURL)
+        asset.resourceLoader.setDelegate(loader, queue: loader.queue)
+        return AVPlayerItem(asset: asset)
     }
 
-    /// Saves the video for a later replay, unless it's already saved or being saved.
-    ///
-    /// The player calls this once its stream is ready, so the copy doesn't compete with the first buffering.
-    func saveForReplay(_ remote: URL) {
-        let file = fileURL(for: remote)
-        guard !FileManager.default.fileExists(atPath: file.path(percentEncoded: false)) else { return }
-        saveVideo(from: remote, to: file)
-    }
-
-    private func saveVideo(from remote: URL, to file: URL) {
-        guard videoTasks[remote] == nil else { return }
-        videoTasks[remote] = Task {
-            defer { videoTasks[remote] = nil }
-            do {
-                try await Self.downloadVideo(from: remote, to: file)
-                Self.logger.info("Saved \(remote.lastPathComponent, privacy: .public) to session cache")
-            } catch {
-                // Streaming keeps working without the file.
-                Self.logger.error(
-                    "Couldn't cache \(remote.lastPathComponent, privacy: .public): \(error.localizedDescription)"
-                )
+    /// The resource loader only holds its delegate weakly, so the cache keeps every loader alive while
+    /// its assets may still ask for ranges. A finished loader stays (it's small, and the next item plays
+    /// the file anyway); a failed one is dropped so a retry downloads again.
+    private func makeLoader(for remote: URL, saving file: URL) -> CachingResourceLoader {
+        let loader = CachingResourceLoader(remote: remote, destination: file) { [weak self] loader, succeeded in
+            guard !succeeded else { return }
+            Task { @MainActor in
+                guard let self, self.videoLoaders[remote] === loader else { return }
+                self.videoLoaders[remote] = nil
             }
         }
+        videoLoaders[remote] = loader
+        return loader
     }
 
     /// Keyed by the absolute URL, since two catalogue entries can share one clip.
@@ -118,14 +117,6 @@ final class MediaCache {
         }
         // Decodes now, so the first frame on screen doesn't pay for it.
         return await image.byPreparingForDisplay() ?? image
-    }
-
-    nonisolated private static func downloadVideo(from remote: URL, to file: URL) async throws {
-        let (temporaryFile, response) = try await URLSession.shared.download(from: remote)
-        try requireSuccess(response)
-        // A move inside one volume is atomic, so a half-written file never sits at the final path.
-        try? FileManager.default.removeItem(at: file)
-        try FileManager.default.moveItem(at: temporaryFile, to: file)
     }
 
     /// Error pages (the catalogue has a video that answers 403 with HTML) must never be cached.

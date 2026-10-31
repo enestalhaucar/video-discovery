@@ -93,11 +93,11 @@ VideoDiscoveryTests/    the two unit tests and a mock service
 - **Zoom and full screen.** Pinch the video to zoom (1×–3×, drag to pan, double-tap to reset). Full
   screen shares the same `PlayerModel`, opens in the current orientation and follows the phone into
   landscape with the system rotation animation; the rest of the app is portrait.
-- **A session-scoped media cache.** Thumbnails stay in memory. A video streams on its first view and,
-  once the stream is ready, is saved to a temporary folder in the background, so opening it again (or
-  retrying offline) plays the local file. The
-  folder is emptied at every launch (iOS gives no callback on a force-quit), so nothing outlives the
-  session. Error responses are never saved.
+- **A session-scoped media cache.** Thumbnails stay in memory. A video is downloaded once: a resource
+  loader feeds the player from that single download and keeps the bytes, which land in a temporary
+  folder when the transfer completes, so opening it again (or retrying offline) plays the local file.
+  The folder is emptied at every launch (iOS gives no callback on a force-quit), so nothing outlives
+  the session. Error responses are never saved.
 - **A small design system, applied as tokens.** The look ("Quiet Cinema") was designed as a design
   system first: light and dark colours, type, spacing, radii and a motion spec. Tokens live in
   `Shared/Theme.swift`, timings in `Shared/Motion.swift`, and views use no literal colours. The
