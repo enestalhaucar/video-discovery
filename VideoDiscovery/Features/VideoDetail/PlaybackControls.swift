@@ -42,11 +42,11 @@ struct PlaybackControls: View {
 
     @State private var scrubTime: Double?
 
-    private var isLoading: Bool { player.phase == .loading }
+    private var chrome: PlayerChrome { PlayerChrome(player) }
+    private var isLoading: Bool { chrome.dimsControls }
     private var hasDuration: Bool { player.duration > 0 }
     private var elapsed: Double { scrubTime ?? player.currentTime }
-    /// Pause while playing, and while a play request is still waiting for data.
-    private var showsPause: Bool { player.phase == .playing || player.isBuffering }
+    private var showsPause: Bool { chrome.showsPause }
 
     var body: some View {
         VStack(spacing: 0) {
