@@ -6,6 +6,25 @@ struct PlayerStageOverlay: View {
     let player: PlayerModel
     let skip: SkipEvent?
 
+    var body: some View {
+        PlayerStageLayers(
+            chrome: PlayerChrome(player),
+            skip: skip,
+            onPlay: { player.play() },
+            onReplay: { player.replay() },
+            onRetry: { player.retry() }
+        )
+    }
+}
+
+/// The stage overlay drawn from a `PlayerChrome`, so every state can be shown without a player.
+struct PlayerStageLayers: View {
+    let chrome: PlayerChrome
+    let skip: SkipEvent?
+    var onPlay: () -> Void = {}
+    var onReplay: () -> Void = {}
+    var onRetry: () -> Void = {}
+
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private enum Metrics {
@@ -15,13 +34,11 @@ struct PlayerStageOverlay: View {
         static let failureTitleGap: CGFloat = 6
     }
 
-    private var showsLoading: Bool { player.phase == .loading }
-    private var showsPlay: Bool { player.phase == .ready && !player.isBuffering }
-    private var showsBuffering: Bool {
-        player.isBuffering && player.phase != .loading && player.phase != .failed
-    }
-    private var showsReplay: Bool { player.phase == .ended }
-    private var showsFailure: Bool { player.phase == .failed }
+    private var showsLoading: Bool { chrome.showsLoading }
+    private var showsPlay: Bool { chrome.showsPlay }
+    private var showsBuffering: Bool { chrome.showsBuffering }
+    private var showsReplay: Bool { chrome.showsReplay }
+    private var showsFailure: Bool { chrome.showsFailure }
 
     var body: some View {
         ZStack {
@@ -55,7 +72,7 @@ struct PlayerStageOverlay: View {
         ZStack {
             if showsPlay {
                 Button {
-                    player.play()
+                    onPlay()
                 } label: {
                     Image(systemName: "play.fill")
                         .font(.title)
@@ -87,7 +104,7 @@ struct PlayerStageOverlay: View {
         ZStack {
             if showsReplay {
                 Button {
-                    player.replay()
+                    onReplay()
                 } label: {
                     HStack(spacing: Theme.Space.pt8) {
                         Image(systemName: "arrow.counterclockwise")
@@ -108,7 +125,7 @@ struct PlayerStageOverlay: View {
     private var failureLayer: some View {
         ZStack {
             if showsFailure {
-                FailureMessage(titleGap: Metrics.failureTitleGap) { player.retry() }
+                FailureMessage(titleGap: Metrics.failureTitleGap, onRetry: onRetry)
             }
         }
     }
