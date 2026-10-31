@@ -31,7 +31,7 @@ struct PlayerChromeTests {
         Expectation(phase: .paused, isBuffering: true, buffering: true, pause: true),
         Expectation(phase: .ended, isBuffering: false, replay: true),
         // Replay tapped: until the player reports playing, Replay stays and the delayed spinner may join it.
-        Expectation(phase: .ended, isBuffering: true, buffering: true, replay: true, pause: true),
+        Expectation(phase: .ended, isBuffering: true, replay: true, pause: true),
         Expectation(phase: .failed, isBuffering: false, failure: true)
     ]
 

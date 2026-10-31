@@ -9,7 +9,8 @@ struct PlayerChrome: Equatable {
 
     var showsLoading: Bool { phase == .loading }
     var showsPlay: Bool { phase == .ready && !isBuffering }
-    var showsBuffering: Bool { isBuffering && phase != .loading && phase != .failed }
+    /// Not over Replay: right after tapping it the clip is still `.ended` while the restart buffers.
+    var showsBuffering: Bool { isBuffering && phase != .loading && phase != .failed && phase != .ended }
     var showsReplay: Bool { phase == .ended }
     var showsFailure: Bool { phase == .failed }
 
