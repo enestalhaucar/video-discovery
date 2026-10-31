@@ -227,7 +227,7 @@ private struct SkipPill: View {
     }
 
     var body: some View {
-        Text(direction == .back ? "\u{2212}10s" : "+10s")
+        (direction == .back ? Text("\u{2212}10s") : Text("+10s"))
             .font(.subheadline)
             .foregroundStyle(Theme.onStage)
             .padding(.vertical, Metrics.verticalInset)

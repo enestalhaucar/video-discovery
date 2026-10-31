@@ -62,7 +62,7 @@ struct FavoriteButton: View {
         }
         .buttonStyle(PressedOpacityStyle())
         .sensoryFeedback(.impact(weight: .light), trigger: isFavorite)
-        .accessibilityLabel(isFavorite ? "Remove from favourites" : "Save to favourites")
+        .accessibilityLabel(isFavorite ? Text("Remove from favourites") : Text("Save to favourites"))
         .accessibilityValue(video.title)
         .accessibilityAddTraits(isFavorite ? .isSelected : [])
     }

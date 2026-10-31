@@ -6,7 +6,7 @@ import SwiftUI
 /// field lives in the content to keep the designed layout on every iOS version.
 struct SearchField: View {
     @Binding var text: String
-    var prompt = "Search videos"
+    var prompt: LocalizedStringKey = "Search videos"
 
     var body: some View {
         HStack(spacing: 6) {

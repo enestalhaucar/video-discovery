@@ -51,7 +51,9 @@ struct Scrubber: View {
         .accessibilityElement()
         .accessibilityLabel("Playback position")
         .accessibilityValue(
-            duration > 0 ? "\(PlaybackClock.text(displayTime)) of \(PlaybackClock.text(duration))" : "Loading"
+            duration > 0
+                ? Text("\(PlaybackClock.text(displayTime)) of \(PlaybackClock.text(duration))")
+                : Text("Loading")
         )
         .accessibilityAdjustableAction { direction in
             switch direction {
