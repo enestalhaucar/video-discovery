@@ -50,6 +50,17 @@
                ReferencedContainer = "container:VideoDiscovery.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "45C1411C95EE3F79E97101FF"
+               BuildableName = "VideoDiscoveryUITests.xctest"
+               BlueprintName = "VideoDiscoveryUITests"
+               ReferencedContainer = "container:VideoDiscovery.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
       <CommandLineArguments>
       </CommandLineArguments>

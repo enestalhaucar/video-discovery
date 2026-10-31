@@ -7,6 +7,13 @@
 	objects = {
 
 /* Begin PBXContainerItemProxy section */
+		1ABADAF2F34A433FFA1EBF4F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 508A270BD53B07C3A8C4C11D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 568721C0CDBC4E5552ABCA2B;
+			remoteInfo = VideoDiscovery;
+		};
 		D7F1D76E8360254D46A14ED9 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 508A270BD53B07C3A8C4C11D /* Project object */;
@@ -17,11 +24,21 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		08696C699414C943FDD571DE /* VideoDiscoveryUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = VideoDiscoveryUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A2031ACB67B8CA33EC64C10F /* VideoDiscoveryTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = VideoDiscoveryTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AF928842C401646A190A6C83 /* VideoDiscovery.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = VideoDiscovery.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		1880230B532CD25914FEFD85 /* VideoDiscoveryUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = VideoDiscoveryUITests;
+			sourceTree = "<group>";
+		};
 		54534937A9BF559C5B0378F8 /* VideoDiscoveryTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			explicitFileTypes = {
@@ -48,6 +65,7 @@
 			children = (
 				AF928842C401646A190A6C83 /* VideoDiscovery.app */,
 				A2031ACB67B8CA33EC64C10F /* VideoDiscoveryTests.xctest */,
+				08696C699414C943FDD571DE /* VideoDiscoveryUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -57,6 +75,7 @@
 			children = (
 				82C11331907417C67BD899BA /* VideoDiscovery */,
 				54534937A9BF559C5B0378F8 /* VideoDiscoveryTests */,
+				1880230B532CD25914FEFD85 /* VideoDiscoveryUITests */,
 				3F27A8CF52787C3FDEC3CBA4 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -64,6 +83,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		45C1411C95EE3F79E97101FF /* VideoDiscoveryUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 70CA40927BCCF54470E689ED /* Build configuration list for PBXNativeTarget "VideoDiscoveryUITests" */;
+			buildPhases = (
+				B52B6050D9B2E3EE00E9724F /* Sources */,
+				FEC82C28FE5D53563348A800 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5F75DEEF8F52BC1F917A9121 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				1880230B532CD25914FEFD85 /* VideoDiscoveryUITests */,
+			);
+			name = VideoDiscoveryUITests;
+			packageProductDependencies = (
+			);
+			productName = VideoDiscoveryUITests;
+			productReference = 08696C699414C943FDD571DE /* VideoDiscoveryUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		568721C0CDBC4E5552ABCA2B /* VideoDiscovery */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 04629B7CB37866D774AB6CDF /* Build configuration list for PBXNativeTarget "VideoDiscovery" */;
@@ -117,6 +158,9 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 2700;
 				TargetAttributes = {
+					45C1411C95EE3F79E97101FF = {
+						TestTargetID = 568721C0CDBC4E5552ABCA2B;
+					};
 					568721C0CDBC4E5552ABCA2B = {
 						ProvisioningStyle = Automatic;
 					};
@@ -138,6 +182,7 @@
 			targets = (
 				568721C0CDBC4E5552ABCA2B /* VideoDiscovery */,
 				B021CE7451972F7320C6F81A /* VideoDiscoveryTests */,
+				45C1411C95EE3F79E97101FF /* VideoDiscoveryUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -151,6 +196,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		EEEC88D177127421EDD3F8C6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FEC82C28FE5D53563348A800 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -189,6 +241,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B52B6050D9B2E3EE00E9724F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D118478E84BF93DC785717B2 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -199,6 +258,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		5F75DEEF8F52BC1F917A9121 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 568721C0CDBC4E5552ABCA2B /* VideoDiscovery */;
+			targetProxy = 1ABADAF2F34A433FFA1EBF4F /* PBXContainerItemProxy */;
+		};
 		DBDDD5B2EBCEE6C29D741247 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 568721C0CDBC4E5552ABCA2B /* VideoDiscovery */;
@@ -227,6 +291,23 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.enestalhaucar.VideoDiscovery;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		32DEDA39ED5641BFF5AC43BD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.enestalhaucar.VideoDiscoveryUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = VideoDiscovery;
 			};
 			name = Debug;
 		};
@@ -395,6 +476,23 @@
 			};
 			name = Release;
 		};
+		CAE0A250A0303C011B41DA22 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.enestalhaucar.VideoDiscoveryUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = VideoDiscovery;
+			};
+			name = Release;
+		};
 		E11DAD194995ED01488F022A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -429,6 +527,15 @@
 			buildConfigurations = (
 				4B0E1786F9CD05759E1F98FC /* Debug */,
 				ABF24BD725ACB65A0E493D0B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		70CA40927BCCF54470E689ED /* Build configuration list for PBXNativeTarget "VideoDiscoveryUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				32DEDA39ED5641BFF5AC43BD /* Debug */,
+				CAE0A250A0303C011B41DA22 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
