@@ -74,7 +74,8 @@ VideoDiscovery/
   Features/Discover/    DiscoverModel, feed, cards
   Features/Favorites/   saved videos
   Features/VideoDetail/ PlayerModel, player surface, stage overlays, controls, zoom, full screen
-VideoDiscoveryTests/    the two unit tests and a mock service
+VideoDiscoveryTests/    unit, player-state, cache and snapshot tests
+VideoDiscoveryUITests/  UI tests driven by the debug launch arguments
 ```
 
 ## Main decisions
@@ -172,18 +173,39 @@ with me:
   missed: favourites were saved but never loaded after a relaunch, because `URL.path()`
   percent-encodes the space in "Application Support". The favourites test now covers it.
 
+## How the work went
+
+The commit history follows this path; each step ended with green tests before the next began.
+
+1. **Brief → requirement list.** Every line of the case became a numbered requirement, with the
+   assumptions written down next to it.
+2. **Plan and plan review.** Architecture and a step plan; a reviewer agent attacked the plan
+   before any code (it caught, for example, the missing Application Support folder on first save).
+3. **Walking skeleton.** Xcode project with SwiftLint in the build, then the catalogue service,
+   the favourites store and their two unit tests (`326b2e3` → `89934c2`).
+4. **Player model.** The playback state machine, built and tested on its own before any UI
+   (`9b92e6a`).
+5. **Screens, twice.** A first native-only pass (`f2c4d0f` → `edad491`), then the final
+   "Quiet Cinema" design system as tokens and the screens restyled to it (`8509372` → `9822dec`).
+6. **Device testing.** On an iPhone: autoplay on open, pinch to zoom, full screen that follows
+   rotation, and a session media cache (`2780a3d` → `3020cce`). Manual testing also found the
+   favourites path bug (`25c85c3`).
+7. **Review and README.** A final adversarial review of the diff, its fixes, then this README
+   (`996a5dc`, `261e1ad`).
+8. **Finishing the gaps.** Instead of listing unfinished work, it was done: a single-download
+   cache, English and Turkish localisation, and the player-state, snapshot and UI tests
+   (`8c958b8` → `b11672f`).
+
 ## Time spent
 
-**2 h 29 min** in total (2:28:41 on a stopwatch that ran without a pause from receiving the case to
-submission). Roughly:
+About **4 h 10 min** in total, within the 5-hour limit. Taken from a stopwatch for the first part
+and from commit times for the rest:
 
-| Part | Time |
-|---|---|
-| Reading the brief, planning, plan review | 35 min |
-| Project setup, core logic, player model, tests | 35 min |
-| Design: a first native pass, then the final design system and its screens | 45 min |
-| Changes after device testing: autoplay, zoom, full screen, media cache | 25 min |
-| Reviews, fixes and this README | 10 min |
+| Part | When | Time |
+|---|---|---|
+| Brief, plan, core logic, player, both design passes, device changes, first README (steps 1–7) | 30 Oct 23:20 – 31 Oct 02:00 | 2 h 40 min |
+| Single-download cache, localisation, player-state, snapshot and UI tests (step 8) | 31 Oct 12:55 – 14:10 | 1 h 15 min |
+| Final checks and this README | 1 Nov | 15 min |
 
 The design iteration was the costliest part: the first pass was built native-only before the final
 design system arrived, and its screens were then redone.
