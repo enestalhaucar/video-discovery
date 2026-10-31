@@ -22,7 +22,7 @@ A SwiftUI app to browse, search, favourite and play videos from a remote catalog
 | Pause on leaving the screen, switching tabs, backgrounding | `onDisappear`, an `isTabActive` environment value and `scenePhase` |
 | Loading, empty and error states with retry | Skeleton cards, "No videos yet", "Couldn’t load videos" with Try again, "No results" |
 | SwiftLint in the build, config in the repo | Run Script build phase + `.swiftlint.yml` (0 violations, `--strict`) |
-| Two focused unit tests | `DiscoverModelTests`, `FavoritesStoreTests` (Swift Testing) |
+| Two focused unit tests | `DiscoverModelTests`, `FavoritesStoreTests` (Swift Testing), plus player-state, cache, snapshot and UI tests |
 
 Added after testing on a device: the video starts when its detail screen first opens, pinch to
 zoom, a full-screen player that follows the phone into landscape, and a media cache that lasts for
@@ -122,17 +122,33 @@ VideoDiscoveryTests/    the two unit tests and a mock service
   feed.
 - An unreadable favourites file is moved aside (`favorites.corrupt.json`) instead of being
   overwritten by the next save.
-- English UI with British spelling, iPhone only.
+- English (British spelling) and Turkish UI from `Localizable.xcstrings`; catalogue titles and
+  descriptions come from the API and aren't translated. iPhone only.
 
 ## Tests
 
-The brief asks for two focused tests; both use Swift Testing.
+The brief asks for two focused tests; these two come first. Everything runs with ⌘U, without
+network access.
 
-- `DiscoverModelTests`: the catalogue is requested once; the feed shows 3 → 6 → 8 videos from that
-  data; search finds a video that hasn't been revealed yet.
-- `FavoritesStoreTests`: favourites toggled in one store are read back by a fresh store from the
-  same file, starting from a missing folder whose name has a space (as Application Support does on a
-  fresh install).
+- **The two focused tests** (Swift Testing):
+  - `DiscoverModelTests`: the catalogue is requested once; the feed shows 3 → 6 → 8 videos from
+    that data; search finds a video that hasn't been revealed yet.
+  - `FavoritesStoreTests`: favourites toggled in one store are read back by a fresh store from the
+    same file, starting from a missing folder whose name has a space (as Application Support does on
+    a fresh install).
+- **Player state**: `PlayerChromeTests` checks what the stage and control bar show for every
+  phase × buffering combination, and the m:ss clock formatting.
+- **Cache**: `CachingResourceLoaderTests` checks that one download serves playback and lands in the
+  session folder, and that error responses are never saved (a stubbed `URLProtocol`).
+- **Snapshots**: every screen state (feed, loading, error, empty, no results, favourites, empty
+  favourites, player overlays, controls) in light and dark, rendered by a small in-repo helper and
+  compared with references in `VideoDiscoveryTests/__Snapshots__`. They were recorded on an iPhone 17
+  simulator with iOS 27.0 and are skipped, with a reason, on any other device, because rendering
+  differs between models and OS versions.
+- **UI tests** (`VideoDiscoveryUITests`): paging 3 → 6 → 8, search results and no results, error
+  and retry, empty catalogue, loading skeleton, favourites (add from a card, remove by swipe or
+  heart, empty state and Browse videos), opening a detail screen, and each tab keeping its stack.
+  They drive the app through the debug launch arguments, so they don't depend on the network.
 
 ## AI usage
 
@@ -148,8 +164,9 @@ with me:
 - **Design.** I designed the screens and the "Quiet Cinema" design system in Claude Design. A first
   native-only pass is visible in the history; the final screens follow the design system's tokens and
   motion spec.
-- **Parallel implementation.** The riskiest parts (player model, detail screen, media cache) were
-  built by separate agents in their own git worktrees and merged once tests passed. Commits carry a
+- **Parallel implementation.** The riskiest parts (player model, detail screen, media cache, and
+  later the single-download cache, localisation and the test suites) were built by separate agents in
+  their own git worktrees and merged once tests passed. Commits carry a
   `Co-Authored-By` line.
 - **Testing.** I tested on the simulator and on an iPhone. Manual testing caught a bug the plan
   missed: favourites were saved but never loaded after a relaunch, because `URL.path()`
@@ -170,17 +187,3 @@ submission). Roughly:
 
 The design iteration was the costliest part: the first pass was built native-only before the final
 design system arrived, and its screens were then redone.
-
-## Unfinished work and next steps
-
-- **UI and snapshot tests** for each screen state; the debug launch arguments are there to drive
-  them. Unit tests for the player's phase-to-UI mapping.
-- **Larger layouts.** Apart from full screen the app is iPhone and portrait only; iPad and landscape
-  would need their own layouts.
-- **Player extras:** Picture in Picture, AirPlay, auto-hiding full-screen controls, remembering the
-  playback position.
-- **Caching:** the first view still downloads a video twice (the stream, then a copy for the cache);
-  a resource-loader-based cache would share one download. `MediaCache` is a singleton over
-  `URLSession.shared`; injecting its folder and downloader would make it unit-testable.
-- **Localisation:** strings are English only and not yet in a String Catalog.
-- Not run on an iOS 17 device; verified on iOS 27.
